@@ -32,66 +32,7 @@ public class GourmetEntityAIHarvestFarmland extends EntityAIMoveToBlock
         super(villagerIn, speedIn, 16);
         this.villager = villagerIn;
     }
-    public boolean isFarmItemInInventoryGV(EntityVillager villager)
-    {
-        for (int i = 0; i < villager.getVillagerInventory().getSizeInventory(); ++i)
-        {
-            ItemStack itemstack = villager.getVillagerInventory().getStackInSlot(i);
 
-            if (!itemstack.isEmpty() && (itemstack.getItem() instanceof ItemSeedFood ||itemstack.getItem() instanceof ItemSeeds))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-    public boolean canAbondonItemsGV()
-    {
-        return this.hasEnoughItemsGV(2);
-    }
-
-    public boolean wantsMoreFoodGV()
-    {
-        boolean flag = this.villager.getProfession() == 0;
-
-        if (flag)
-        {
-            return !hasEnoughItemsGV(5);
-        }
-        else
-        {
-            return !hasEnoughItemsGV(1);
-        }
-    }
-
-    /**
-     * Returns true if villager has enough items in inventory
-     */
-    private boolean hasEnoughItemsGV(int multiplier)
-    {
-        boolean flag = villager.getProfession() == 0;
-
-        for (int i = 0; i < villager.getVillagerInventory().getSizeInventory(); ++i)
-        {
-            ItemStack itemstack = villager.getVillagerInventory().getStackInSlot(i);
-
-            if (!itemstack.isEmpty())
-            {
-                if (itemstack.getItem() instanceof ItemFood && itemstack.getCount() >= 3 * multiplier || itemstack.getItem() instanceof ItemSeedFood && itemstack.getCount() >= 12 * multiplier)
-                {
-                    return true;
-                }
-
-                if (flag && itemstack.getItem() == Items.WHEAT && itemstack.getCount() >= 9 * multiplier)
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
 
     /**
      * Returns whether the EntityAIBase should begin execution.
@@ -100,14 +41,14 @@ public class GourmetEntityAIHarvestFarmland extends EntityAIMoveToBlock
     {
         if (this.runDelay <= 0)
         {
-            if (!this.villager.world.getGameRules().getBoolean("mobGriefing"))
+            if (!this.villager.world.getGameRules().getBoolean("mobGriefing") &&!this.villager.isChild())
             {
                 return false;
             }
 
             this.currentTask = -1;
-            this.hasFarmItem = isFarmItemInInventoryGV(this.villager);
-            this.wantsToReapStuff = wantsMoreFoodGV();
+            this.hasFarmItem = GourmetVillagers.isFarmItemInInventoryGV(this.villager);
+            this.wantsToReapStuff = GourmetVillagers.wantsMoreFoodGV(this.villager);
         }
 
         return super.shouldExecute();

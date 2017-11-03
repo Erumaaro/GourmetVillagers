@@ -23,6 +23,9 @@ public class GourmetEntityAIVillagerInteract extends EntityAIWatchClosest2
         this.villager = villagerIn;
     }
 
+
+
+
     /**
      * Execute a one shot task or start executing a continuous task
      */
@@ -30,7 +33,7 @@ public class GourmetEntityAIVillagerInteract extends EntityAIWatchClosest2
     {
         super.startExecuting();
 
-        if (this.villager.canAbondonItems() && this.closestEntity instanceof EntityVillager && ((EntityVillager)this.closestEntity).wantsMoreFood())
+        if (GourmetVillagers.canAbondonItemsGV(this.villager) && this.closestEntity instanceof EntityVillager && GourmetVillagers.wantsMoreFoodGV((EntityVillager)this.closestEntity))
         {
             this.interactionDelay = 10;
         }

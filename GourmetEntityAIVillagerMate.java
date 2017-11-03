@@ -1,11 +1,21 @@
 package net.Erumaaro.GourmetVillagers;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.passive.EntityVillager;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemFood;
+import net.minecraft.item.ItemSeedFood;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.village.Village;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
+
+import java.lang.reflect.Field;
 
 public class GourmetEntityAIVillagerMate extends EntityAIBase
 {
@@ -20,6 +30,58 @@ public class GourmetEntityAIVillagerMate extends EntityAIBase
         this.villager = villagerIn;
         this.world = villagerIn.world;
         this.setMutexBits(3);
+    }
+
+    public boolean checkisWillingToMateGV(EntityVillager villagerIn)
+    {
+        return ReflectionHelper.getPrivateValue(EntityVillager.class, villagerIn,"isWillingToMate");
+    }
+
+
+
+    public boolean hasEnoughFoodToBreedGV(EntityVillager villagerIn)
+    {
+        return GourmetVillagers.hasEnoughItemsGV(villagerIn,1);
+    }
+    public boolean getIsWillingToMateGV(EntityVillager villagerIn,boolean updateFirst)
+    {
+        if (!checkisWillingToMateGV(villagerIn) && updateFirst && hasEnoughFoodToBreedGV(villagerIn))
+        {
+            boolean flag = false;
+
+            for (int i = 0; i < villagerIn.getVillagerInventory().getSizeInventory(); ++i)
+            {
+                ItemStack itemstack = villagerIn.getVillagerInventory().getStackInSlot(i);
+
+                if (!itemstack.isEmpty())
+                {
+                    if (itemstack.getItem() instanceof ItemFood && itemstack.getCount() >= 3)
+                    {
+                        flag = true;
+                        villagerIn.getVillagerInventory().decrStackSize(i, 3);
+                    }
+                    else if ((itemstack.getItem() instanceof ItemSeedFood) && itemstack.getCount() >= 12)
+                    {
+                        flag = true;
+                        villagerIn.getVillagerInventory().decrStackSize(i, 12);
+                    }
+                }
+
+                if (flag)
+                {
+                    villagerIn.world.setEntityState(villagerIn, (byte)18);
+                    setIsWillingToMateGV(villagerIn,true);
+                    break;
+                }
+            }
+        }
+
+        return checkisWillingToMateGV(villagerIn);
+    }
+
+    public void setIsWillingToMateGV(EntityVillager villagerIn,boolean isWillingToMate)
+    {
+        villagerIn.setIsWillingToMate(isWillingToMate);
     }
 
     /**
@@ -43,7 +105,7 @@ public class GourmetEntityAIVillagerMate extends EntityAIBase
             {
                 return false;
             }
-            else if (this.checkSufficientDoorsPresentForNewVillager() && this.villager.getIsWillingToMate(true))
+            else if (this.checkSufficientDoorsPresentForNewVillager() && getIsWillingToMateGV(this.villager,true))
             {
                 Entity entity = this.world.findNearestEntityWithinAABB(EntityVillager.class, this.villager.getEntityBoundingBox().grow(8.0D, 3.0D, 8.0D), this.villager);
 
@@ -54,7 +116,7 @@ public class GourmetEntityAIVillagerMate extends EntityAIBase
                 else
                 {
                     this.mate = (EntityVillager)entity;
-                    return this.mate.getGrowingAge() == 0 && this.mate.getIsWillingToMate(true);
+                    return this.mate.getGrowingAge() == 0 && getIsWillingToMateGV(this.mate,true);
                 }
             }
             else
@@ -88,7 +150,7 @@ public class GourmetEntityAIVillagerMate extends EntityAIBase
      */
     public boolean shouldContinueExecuting()
     {
-        return this.matingTimeout >= 0 && this.checkSufficientDoorsPresentForNewVillager() && this.villager.getGrowingAge() == 0 && this.villager.getIsWillingToMate(false);
+        return this.matingTimeout >= 0 && this.checkSufficientDoorsPresentForNewVillager() && this.villager.getGrowingAge() == 0 && getIsWillingToMateGV(this.villager,false);
     }
 
     /**
@@ -132,8 +194,8 @@ public class GourmetEntityAIVillagerMate extends EntityAIBase
         net.minecraft.entity.EntityAgeable entityvillager = this.villager.createChild(this.mate);
         this.mate.setGrowingAge(6000);
         this.villager.setGrowingAge(6000);
-        this.mate.setIsWillingToMate(false);
-        this.villager.setIsWillingToMate(false);
+        setIsWillingToMateGV(this.mate,false);
+        setIsWillingToMateGV(this.villager, false);
 
         final net.minecraftforge.event.entity.living.BabyEntitySpawnEvent event = new net.minecraftforge.event.entity.living.BabyEntitySpawnEvent(villager, mate, entityvillager);
         if (net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event) || event.getChild() == null) { return; }

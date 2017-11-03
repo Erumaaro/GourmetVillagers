@@ -41,6 +41,8 @@ public class GourmetVillagers {
 
     }
 
+
+
     @Mod.EventBusSubscriber
     public static class MyForgeEventHandler {
         @SubscribeEvent
@@ -49,7 +51,7 @@ public class GourmetVillagers {
                 EntityVillager thisVillager =((EntityVillager)event.getEntity());
                 thisVillager.tasks.addTask(9, new GourmetEntityAIVillagerInteract(thisVillager));
                 thisVillager.tasks.addTask(6, new GourmetEntityAIVillagerMate(thisVillager));
-                if(thisVillager.getProfessionForge() == VillagerRegistry.getById(0) && !thisVillager.isChild()) {
+                if(thisVillager.getProfessionForge() == VillagerRegistry.getById(0)) {
                     thisVillager.tasks.addTask(6, new GourmetEntityAIHarvestFarmland(thisVillager, 0.6D));
                 }
             }
@@ -91,7 +93,7 @@ public class GourmetVillagers {
         ItemStack itemstack = itemEntity.getItem();
         Item item = itemstack.getItem();
 
-        if (item instanceof ItemFood || item instanceof ItemSeedFood ||item instanceof ItemSeeds)
+        if (item instanceof ItemSeedFood ||item instanceof ItemSeeds)
         {
             ItemStack itemstack1 = villager.getVillagerInventory().addItem(itemstack);
 
@@ -104,6 +106,67 @@ public class GourmetVillagers {
                 itemstack.setCount(itemstack1.getCount());
             }
         }
+    }
+    public static boolean isFarmItemInInventoryGV(EntityVillager villager)
+    {
+        for (int i = 0; i < villager.getVillagerInventory().getSizeInventory(); ++i)
+        {
+            ItemStack itemstack = villager.getVillagerInventory().getStackInSlot(i);
+
+            if (!itemstack.isEmpty() && (itemstack.getItem() instanceof ItemSeedFood ||itemstack.getItem() instanceof ItemSeeds))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    public static boolean canAbondonItemsGV(EntityVillager villagerIn)
+    {
+
+        return hasEnoughItemsGV(villagerIn,2);
+    }
+
+    public static boolean wantsMoreFoodGV(EntityVillager villagerIn)
+    {
+        boolean flag = villagerIn.getProfession() == 0;
+
+        if (flag)
+        {
+            return !hasEnoughItemsGV(villagerIn,5);
+        }
+        else
+        {
+            return !hasEnoughItemsGV(villagerIn,1);
+        }
+    }
+
+    /**
+     * Returns true if villager has enough items in inventory
+     */
+    static boolean hasEnoughItemsGV(EntityVillager villagerIn, int multiplier)
+    {
+        boolean flag = villagerIn.getProfession() == 0;
+
+        for (int i = 0; i < villagerIn.getVillagerInventory().getSizeInventory(); ++i)
+        {
+            ItemStack itemstack = villagerIn.getVillagerInventory().getStackInSlot(i);
+
+            if (!itemstack.isEmpty())
+            {
+                if ((itemstack.getItem() instanceof ItemFood) && !(itemstack.getItem() instanceof ItemSeedFood) && itemstack.getCount() >= 3 * multiplier || itemstack.getItem() instanceof ItemSeedFood && itemstack.getCount() >= 12 * multiplier)
+                {
+                    return true;
+                }
+
+                if (flag && itemstack.getItem() == Items.WHEAT && itemstack.getCount() >= 9 * multiplier)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
 }
