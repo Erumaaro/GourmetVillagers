@@ -7,9 +7,9 @@ import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemFood;
-import net.minecraft.item.ItemSeedFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
+
 
 public class GourmetEntityAIVillagerInteract extends EntityAIWatchClosest2
 {
@@ -33,7 +33,7 @@ public class GourmetEntityAIVillagerInteract extends EntityAIWatchClosest2
     {
         super.startExecuting();
 
-        if (GourmetVillagers.canAbondonItemsGV(this.villager) && this.closestEntity instanceof EntityVillager && GourmetVillagers.wantsMoreFoodGV((EntityVillager)this.closestEntity))
+        if (GourmetVillagers.canAbandonItemsGV(this.villager) && this.closestEntity instanceof EntityVillager && GourmetVillagers.wantsMoreFoodGV((EntityVillager)this.closestEntity))
         {
             this.interactionDelay = 10;
         }
@@ -67,13 +67,13 @@ public class GourmetEntityAIVillagerInteract extends EntityAIWatchClosest2
                     {
                         Item item = itemstack.getItem();
 
-                        if ((item instanceof ItemFood && itemstack.getCount() > 3))
+                        if ((item instanceof ItemFood && item != Items.WHEAT && itemstack.getCount() > 3))
                         {
                             int l = itemstack.getCount() / 2;
                             itemstack.shrink(l);
                             itemstack1 = new ItemStack(item, l, itemstack.getMetadata());
                         }
-                        else if (item == Items.WHEAT && itemstack.getCount() > 5)
+                        else if (item == Items.WHEAT &&itemstack.getCount() > 5)
                         {
                             int j = itemstack.getCount() / 2 / 3 * 3;
                             int k = j / 3;

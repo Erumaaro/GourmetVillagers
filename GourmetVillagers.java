@@ -1,12 +1,11 @@
 package net.Erumaaro.GourmetVillagers;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.ai.EntityAIVillagerMate;
+import net.minecraft.entity.ai.*;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.passive.EntityVillager;
-import net.minecraft.init.Items;
 import net.minecraft.item.*;
+import net.minecraft.init.Items;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -41,16 +40,30 @@ public class GourmetVillagers {
 
     }
 
-
-
     @Mod.EventBusSubscriber
     public static class MyForgeEventHandler {
         @SubscribeEvent
         public static void EntityJoinWorld(EntityJoinWorldEvent event) {
             if(event.getEntity() instanceof EntityVillager) {
                 EntityVillager thisVillager =((EntityVillager)event.getEntity());
+
+                for (Object entry : thisVillager.tasks.taskEntries.toArray()) {
+                    EntityAIBase ai = ((EntityAITasks.EntityAITaskEntry) entry).action;
+                    if (ai instanceof EntityAIVillagerMate) {
+                        thisVillager.tasks.removeTask(ai);
+                    }
+                    if (ai instanceof EntityAIVillagerInteract) {
+                        thisVillager.tasks.removeTask(ai);
+                    }
+                    if (ai instanceof EntityAIHarvestFarmland) {
+                        thisVillager.tasks.removeTask(ai);
+                    }
+                }
+
                 thisVillager.tasks.addTask(9, new GourmetEntityAIVillagerInteract(thisVillager));
-                thisVillager.tasks.addTask(6, new GourmetEntityAIVillagerMate(thisVillager));
+                if(!thisVillager.isChild()) {
+                    thisVillager.tasks.addTask(6, new GourmetEntityAIVillagerMate(thisVillager));
+                }
                 if(thisVillager.getProfessionForge() == VillagerRegistry.getById(0)) {
                     thisVillager.tasks.addTask(6, new GourmetEntityAIHarvestFarmland(thisVillager, 0.6D));
                 }
@@ -61,6 +74,7 @@ public class GourmetVillagers {
 
             if(event.getEntity() instanceof EntityVillager){
                 GourmetVillagerLivingUpdate((EntityLivingBase) event.getEntity());
+
             }
 
         }
@@ -113,7 +127,7 @@ public class GourmetVillagers {
         {
             ItemStack itemstack = villager.getVillagerInventory().getStackInSlot(i);
 
-            if (!itemstack.isEmpty() && (itemstack.getItem() instanceof ItemSeedFood ||itemstack.getItem() instanceof ItemSeeds))
+            if (!itemstack.isEmpty() && (itemstack.getItem() instanceof ItemSeedFood ||itemstack.getItem() instanceof ItemSeeds)&& itemstack.getItem() != Items.WHEAT)
             {
                 return true;
             }
@@ -121,7 +135,7 @@ public class GourmetVillagers {
 
         return false;
     }
-    public static boolean canAbondonItemsGV(EntityVillager villagerIn)
+    public static boolean canAbandonItemsGV(EntityVillager villagerIn)
     {
 
         return hasEnoughItemsGV(villagerIn,2);
@@ -154,7 +168,7 @@ public class GourmetVillagers {
 
             if (!itemstack.isEmpty())
             {
-                if ((itemstack.getItem() instanceof ItemFood) && !(itemstack.getItem() instanceof ItemSeedFood) && itemstack.getCount() >= 3 * multiplier || itemstack.getItem() instanceof ItemSeedFood && itemstack.getCount() >= 12 * multiplier)
+                if ((itemstack.getItem() instanceof ItemFood) && !(itemstack.getItem() instanceof ItemSeedFood) && itemstack.getCount() >= 3 * multiplier || itemstack.getItem() instanceof ItemSeedFood && itemstack.getCount() >= 12 * multiplier  && itemstack.getItem() != Items.WHEAT)
                 {
                     return true;
                 }

@@ -7,14 +7,10 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.ai.EntityAIMoveToBlock;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryBasic;
-import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemSeedFood;
-import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSeeds;
-import net.minecraftforge.common.IPlantable;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -41,7 +37,7 @@ public class GourmetEntityAIHarvestFarmland extends EntityAIMoveToBlock
     {
         if (this.runDelay <= 0)
         {
-            if (!this.villager.world.getGameRules().getBoolean("mobGriefing") &&!this.villager.isChild())
+            if (!this.villager.world.getGameRules().getBoolean("mobGriefing") && (this.villager.getGrowingAge() != 0))
             {
                 return false;
             }

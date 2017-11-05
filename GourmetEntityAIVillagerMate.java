@@ -1,7 +1,5 @@
 package net.Erumaaro.GourmetVillagers;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.passive.EntityVillager;
@@ -12,10 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.village.Village;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
-
-import java.lang.reflect.Field;
 
 public class GourmetEntityAIVillagerMate extends EntityAIBase
 {
@@ -34,7 +29,15 @@ public class GourmetEntityAIVillagerMate extends EntityAIBase
 
     public boolean checkisWillingToMateGV(EntityVillager villagerIn)
     {
-        return ReflectionHelper.getPrivateValue(EntityVillager.class, villagerIn,"isWillingToMate");
+        try
+        {
+            return ReflectionHelper.getPrivateValue(EntityVillager.class, villagerIn,"field_175565_bs"); //for obfuscated mc client
+        }
+        catch (Exception ex)
+        {
+            return ReflectionHelper.getPrivateValue(EntityVillager.class, villagerIn,"isWillingToMate");// for mdk client only
+        }
+
     }
 
 
@@ -55,12 +58,12 @@ public class GourmetEntityAIVillagerMate extends EntityAIBase
 
                 if (!itemstack.isEmpty())
                 {
-                    if (itemstack.getItem() instanceof ItemFood && itemstack.getCount() >= 3)
+                    if (itemstack.getItem() instanceof ItemSeedFood && itemstack.getCount() >= 12)
                     {
                         flag = true;
                         villagerIn.getVillagerInventory().decrStackSize(i, 3);
                     }
-                    else if ((itemstack.getItem() instanceof ItemSeedFood) && itemstack.getCount() >= 12)
+                    else if ((itemstack.getItem() instanceof ItemFood) && itemstack.getItem() != Items.WHEAT && itemstack.getCount() >= 3)
                     {
                         flag = true;
                         villagerIn.getVillagerInventory().decrStackSize(i, 12);
